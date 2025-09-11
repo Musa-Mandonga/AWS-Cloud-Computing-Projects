@@ -1,17 +1,9 @@
-# Project 1: AWS Account Setup & Billing Alert
+## AWS Account Setup & Billing Alert
 
-## 🎯 Learning Objectives
-By completing this project, you will:
-- Set up an AWS free tier account
-- Understand AWS billing and cost management
-- Configure billing alerts and notifications
-- Learn basic CloudWatch alarm setup
-- Familiarize yourself with the AWS Management Console
+## Project Overview
+This foundational project guides through creating an AWS account and setting up essential billing monitoring. We will configure cost alerts to avoid unexpected charges while exploring AWS services.
 
-## 📋 Project Overview
-This foundational project guides you through creating an AWS account and setting up essential billing monitoring. You'll learn how to configure cost alerts to avoid unexpected charges while exploring AWS services.
-
-## 🏗️ Architecture
+## Architecture
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   AWS Account   │───▶│  CloudWatch      │───▶│  SNS Topic      │
@@ -19,18 +11,18 @@ This foundational project guides you through creating an AWS account and setting
 └─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
-## 🔧 AWS Services Used
+## AWS Services Used
 - **AWS Account Management**: Free tier account setup
 - **CloudWatch**: Billing alarms and monitoring
 - **SNS (Simple Notification Service)**: Optional email notifications
 - **Billing Dashboard**: Cost tracking and management
 
-## 📝 Prerequisites
+## Prerequisites
 - Valid email address
 - Credit or debit card for account verification
 - Phone number for verification
 
-## 🚀 Implementation Methods
+## Implementation Methods
 
 ### Method 1: AWS Management Console (Recommended for Learning)
 
