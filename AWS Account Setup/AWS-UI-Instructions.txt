@@ -6,3 +6,4 @@ Set Up AWS Account - AWS Management Console Instructions
 4. Verify your email and phone number as instructed.
 5. Once your account is created, sign in to the AWS Management Console at https://console.aws.amazon.com/.
 
+Note: Account creation cannot be automated with CloudFormation. Proceed to the next project after your account is set up. 
