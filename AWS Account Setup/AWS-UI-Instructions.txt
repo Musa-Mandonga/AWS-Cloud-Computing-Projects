@@ -1,1 +1,13 @@
+Project 1: Set Up AWS Account - AWS Management Console Instructions
 
+1. Go to https://aws.amazon.com/free/ and click "Create a Free Account."
+2. Enter your email address, password, and choose an account name. Click "Continue."
+3. Enter your contact information and payment details as prompted. AWS requires a credit/debit card for verification, but you can use the Free Tier.
+4. Verify your email and phone number as instructed.
+5. Once your account is created, sign in to the AWS Management Console at https://console.aws.amazon.com/.
+6. In the search bar, type "Billing" and select the Billing dashboard.
+7. In the left menu, click "Billing preferences" and enable "Receive Free Tier Usage Alerts." Save your preferences.
+8. (Optional) Set up a billing alarm: In the search bar, type "CloudWatch" and go to the CloudWatch service. Click "Alarms" > "Create alarm." Follow the prompts to set an alarm for the "EstimatedCharges" metric.
+9. Explore the AWS Console: Familiarize yourself with the navigation bar, services menu, and account settings.
+
+Note: Account creation cannot be automated with CloudFormation. Proceed to the next project after your account is set up. 
