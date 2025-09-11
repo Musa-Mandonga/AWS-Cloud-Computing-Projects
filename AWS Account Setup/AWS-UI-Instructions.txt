@@ -1,4 +1,4 @@
-Project 1: Set Up AWS Account - AWS Management Console Instructions
+Set Up AWS Account - AWS Management Console Instructions
 
 1. Go to https://aws.amazon.com/free/ and click "Create a Free Account."
 2. Enter your email address, password, and choose an account name. Click "Continue."
