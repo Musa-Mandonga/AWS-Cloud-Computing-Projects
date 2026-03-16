@@ -1,0 +1,94 @@
+# How to Deploy this CloudFormation Template
+#
+# Option 1: AWS Management Console
+# 1. Go to CloudFormation > Create stack > With new resources (standard).
+# 2. Upload this file and follow the prompts.
+#
+# Option 2: AWS CLI
+# 1. aws cloudformation create-stack --stack-name django-ecr-ecs --template-body file://project7_django_ecr_ecs.yaml --parameters ParameterKey=ECRRepoName,ParameterValue=mydjangoapp ParameterKey=ContainerPort,ParameterValue=8000
+# 2. aws cloudformation describe-stacks --stack-name django-ecr-ecs
+#
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Creates an ECR repository, ECS cluster, task definition, and Fargate service for a Django app.
+
+Parameters:
+  ECRRepoName:
+    Type: String
+    Description: Name for the ECR repository (e.g., mydjangoapp)
+  ContainerPort:
+    Type: Number
+    Default: 8000
+    Description: Port the Django app listens on
+
+Resources:
+  DjangoECRRepo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref ECRRepoName
+
+  DjangoCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: django-ecs-cluster
+
+  DjangoTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  DjangoTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: django-task
+      Cpu: '256'
+      Memory: '512'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      ExecutionRoleArn: !GetAtt DjangoTaskExecutionRole.Arn
+      ContainerDefinitions:
+        - Name: django-container
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepoName}:latest"
+          PortMappings:
+            - ContainerPort: !Ref ContainerPort
+
+  DjangoServiceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP access to ECS service
+      VpcId: !ImportValue DefaultVPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          CidrIp: 0.0.0.0/0
+
+  DjangoService:
+    Type: AWS::ECS::Service
+    DependsOn: DjangoCluster
+    Properties:
+      Cluster: !Ref DjangoCluster
+      DesiredCount: 1
+      LaunchType: FARGATE
+      TaskDefinition: !Ref DjangoTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups: [!Ref DjangoServiceSecurityGroup]
+          Subnets: !Split [",", { "Fn::ImportValue" : "DefaultPublicSubnets" } ]
+
+Outputs:
+  ECRRepoUri:
+    Description: URI of the ECR repository
+    Value: !GetAtt DjangoECRRepo.RepositoryUri
+  ECSClusterName:
+    Description: Name of the ECS cluster
+    Value: !Ref DjangoCluster 
