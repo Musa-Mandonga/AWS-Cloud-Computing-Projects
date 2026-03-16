@@ -1,0 +1,90 @@
+# How to Deploy this CloudFormation Template
+#
+# Option 1: AWS Management Console
+# 1. Go to CloudFormation > Create stack > With new resources (standard).
+# 2. Upload this file and follow the prompts.
+#
+# Option 2: AWS CLI
+# 1. aws cloudformation create-stack --stack-name s3-cloudfront-hostedzone --template-body file://project6_hostedzone_s3_cloudfront.yaml --parameters ParameterKey=DomainName,ParameterValue=yourdomain.com
+# 2. aws cloudformation describe-stacks --stack-name s3-cloudfront-hostedzone
+#
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Creates a public hosted zone, S3 static website, and CloudFront distribution.
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: The domain name for your website (e.g., example.com)
+
+Resources:
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref DomainName  # Bucket name must match the domain for static website hosting
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: s3:GetObject
+            Resource: !Sub '${WebsiteBucket.Arn}/*'
+
+  WebsiteHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Ref DomainName
+
+  WebsiteDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt WebsiteBucket.WebsiteURL  # Use the S3 website endpoint
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: http-only
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD]
+          CachedMethods: [GET, HEAD]
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+        DefaultRootObject: index.html
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+
+  WebsiteRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Sub '${DomainName}.'
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt WebsiteDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront hosted zone ID (global)
+
+Outputs:
+  WebsiteURL:
+    Description: The S3 static website endpoint
+    Value: !GetAtt WebsiteBucket.WebsiteURL
+  CloudFrontURL:
+    Description: The CloudFront distribution domain name
+    Value: !GetAtt WebsiteDistribution.DomainName
+  HostedZoneNameServers:
+    Description: The Route 53 hosted zone name servers
+    Value: !GetAtt WebsiteHostedZone.NameServers 
