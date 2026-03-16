@@ -1,0 +1,14 @@
+Project 3: Install AWS CLI and Interact with S3 via API - AWS Management Console Instructions
+
+1. Sign in to the AWS Management Console and go to the S3 service.
+2. Click "Create bucket."
+   - Enter a globally unique bucket name (e.g., yourname-unique-bucket).
+   - Choose a region and leave other settings as default for now.
+   - Click "Create bucket."
+3. Click on your new bucket name to open it.
+4. To upload a file, click the "Upload" button, then drag and drop or select a file from your computer.
+   - Click "Upload."
+5. To view files, click on the bucket and see the list of objects.
+6. (Optional) Explore bucket properties, permissions, and versioning for more advanced features.
+
+Note: For CLI/API interaction, see the CloudFormation template and AWS CLI documentation. 
