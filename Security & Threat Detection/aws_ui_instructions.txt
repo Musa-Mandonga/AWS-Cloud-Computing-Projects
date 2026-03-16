@@ -1,0 +1,24 @@
+Project 10: AWS WAF Rules and GuardDuty Insights - AWS Management Console Instructions
+
+1. Create a Web ACL in AWS WAF:
+   - Go to WAF & Shield > Web ACLs > Create web ACL.
+   - Name your Web ACL, select the resource type (e.g., CloudFront, ALB), and choose your resource.
+   - Add rules:
+     - Add a managed rule group (e.g., AWS-AWSManagedRulesCommonRuleSet).
+     - Add a custom rule (e.g., block a specific IP or rate-based rule).
+     - (Optional) Add a rule to block SQL injection or XSS attacks.
+   - Set default action (allow or block).
+   - Review and create the Web ACL.
+
+2. Associate the Web ACL with your resource (e.g., ALB or CloudFront).
+
+3. Enable GuardDuty:
+   - Go to GuardDuty > Get started.
+   - Click Enable GuardDuty.
+
+4. Generate or View Findings:
+   - (Optional) Use the "Generate sample findings" button in GuardDuty to see example threats.
+   - Review findings and insights in the GuardDuty console.
+   - Click on findings to see details and recommended actions.
+
+5. Clean up resources when done to avoid charges. 
