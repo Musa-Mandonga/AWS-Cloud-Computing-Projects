@@ -1,0 +1,33 @@
+Project 5: Connect to AWS RDS/MongoDB, Write and Retrieve Data - AWS Management Console Instructions
+
+A. For AWS RDS (MySQL/PostgreSQL):
+
+1. Go to RDS Dashboard > Databases > Create database.
+2. Choose Standard Create, select MySQL or PostgreSQL.
+3. Set DB instance identifier, master username, and password.
+4. Choose db.t3.micro (free tier), set storage, and create the database.
+5. In Connectivity, select your VPC and create a new security group.
+6. After creation, edit the security group to allow inbound traffic on port 3306 (MySQL) or 5432 (PostgreSQL) from your EC2 or your IP.
+7. Note the endpoint and port.
+8. Connect from EC2 or your local machine:
+   - MySQL: `mysql -h <endpoint> -u <username> -p`
+   - PostgreSQL: `psql -h <endpoint> -U <username> -d <dbname>`
+9. Create a table, insert data, and select data using SQL commands or a Python script.
+
+B. For MongoDB Atlas:
+
+1. Go to https://www.mongodb.com/cloud/atlas and sign up/log in.
+2. Create a free cluster, choose AWS as the cloud provider.
+3. Add your IP address to the access list.
+4. Create a database user and password.
+5. Get the connection string.
+6. Connect using MongoDB Compass, `mongo` shell, or a Python/Node.js script.
+7. Insert and retrieve documents using your script.
+
+C. For AWS DocumentDB (optional):
+
+1. Go to AWS Console > DocumentDB > Create cluster.
+2. Set up as with RDS, allow access from your EC2 or IP.
+3. Use the MongoDB shell or a script to connect, insert, and retrieve data.
+
+Clean up resources when done to avoid charges. 
