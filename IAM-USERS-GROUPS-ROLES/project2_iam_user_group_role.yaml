@@ -1,0 +1,60 @@
+# How to Deploy this CloudFormation Template
+#
+# Option 1: AWS Management Console
+# 1. Sign in to the AWS Console and go to CloudFormation.
+# 2. Click 'Create stack' > 'With new resources (standard)'.
+# 3. Upload this YAML file and follow the prompts.
+#
+# Option 2: AWS CLI
+# 1. Open your terminal and navigate to the folder containing this file.
+# 2. Run:
+#    aws cloudformation create-stack --stack-name iam-user-group-role-stack --template-body file://project2_iam_user_group_role.yaml
+# 3. To check status:
+#    aws cloudformation describe-stacks --stack-name iam-user-group-role-stack
+#
+AWSTemplateFormatVersion: '2010-09-09'  # Specifies the version of the CloudFormation template format
+Description: >
+  Creates an IAM group with read-only permissions, a user, assigns the user to the group, and creates a role for EC2.
+
+Resources:
+  # IAM Group with basic read-only permissions
+  BasicViewGroup:
+    Type: AWS::IAM::Group  # Defines an IAM Group resource
+    Properties:
+      GroupName: BasicViewGroup  # Name of the group
+      Policies:
+        - PolicyName: BasicViewPolicy  # Name of the inline policy
+          PolicyDocument:
+            Version: '2012-10-17'  # Policy language version
+            Statement:
+              - Effect: Allow  # Allow the following actions
+                Action:
+                  - "ec2:Describe*"      # Allow describing EC2 resources
+                  - "s3:ListBucket"      # Allow listing S3 buckets
+                  - "cloudwatch:List*"   # Allow listing CloudWatch resources
+                Resource: "*"           # Applies to all resources
+  # IAM User
+  BasicUser:
+    Type: AWS::IAM::User  # Defines an IAM User resource
+    Properties:
+      UserName: BasicUser  # Name of the user
+  # Assign the user to the group
+  UserGroupAssignment:
+    Type: AWS::IAM::UserToGroupAddition  # Adds user to group
+    Properties:
+      GroupName: !Ref BasicViewGroup  # Reference to the group
+      Users:
+        - !Ref BasicUser  # Reference to the user
+  # Example IAM Role for EC2
+  ExampleRole:
+    Type: AWS::IAM::Role  # Defines an IAM Role resource
+    Properties:
+      RoleName: ExampleRole  # Name of the role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'  # Policy language version
+        Statement:
+          - Effect: Allow  # Allow the following principal to assume the role
+            Principal:
+              Service: "ec2.amazonaws.com"  # EC2 service can assume this role
+            Action: "sts:AssumeRole"  # Action allowed
+# Comments: This template demonstrates basic IAM resource creation and relationships. 
