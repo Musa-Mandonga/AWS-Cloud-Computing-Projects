@@ -1,0 +1,84 @@
+# How to Deploy this CloudFormation Template
+#
+# Option 1: AWS Management Console
+# 1. Go to CloudFormation > Create stack > With new resources (standard).
+# 2. Upload this file and follow the prompts.
+#
+# Option 2: AWS CLI
+# 1. aws cloudformation create-stack --stack-name waf-guardduty-demo --template-body file://project10_waf_guardduty.yaml
+# 2. aws cloudformation describe-stacks --stack-name waf-guardduty-demo
+#
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Creates a WAF Web ACL with managed and custom rules, and enables GuardDuty.
+
+Resources:
+  MyWebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: DemoWebACL
+      Scope: REGIONAL  # Use CLOUDFRONT for global resources
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: DemoWebACL
+      Rules:
+        - Name: AWSManagedCommonRuleSet
+          Priority: 1
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: AWSManagedCommonRuleSet
+        - Name: BlockSpecificIP
+          Priority: 2
+          Action:
+            Block: {}
+          Statement:
+            IPSetReferenceStatement:
+              Arn: !GetAtt BlockedIPSet.Arn
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: BlockSpecificIP
+        - Name: RateLimitRule
+          Priority: 3
+          Action:
+            Block: {}
+          Statement:
+            RateBasedStatement:
+              Limit: 100
+              AggregateKeyType: IP
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: RateLimitRule
+
+  BlockedIPSet:
+    Type: AWS::WAFv2::IPSet
+    Properties:
+      Name: BlockedIPs
+      Scope: REGIONAL
+      IPAddressVersion: IPV4
+      Addresses:
+        - 203.0.113.1/32  # Example IP to block
+
+  GuardDutyDetector:
+    Type: AWS::GuardDuty::Detector
+    Properties:
+      Enable: true
+
+Outputs:
+  WebACLArn:
+    Description: ARN of the WAF Web ACL
+    Value: !GetAtt MyWebACL.Arn
+  GuardDutyDetectorId:
+    Description: GuardDuty Detector ID
+    Value: !Ref GuardDutyDetector 
