@@ -1,0 +1,37 @@
+Project 4: Custom VPC, Security, and EC2 Web App Deployment - AWS Management Console Instructions
+
+1. Create a VPC:
+   - Go to VPC Dashboard > Your VPCs > Create VPC.
+   - Name your VPC (e.g., CustomVPC), set IPv4 CIDR block (e.g., 10.0.0.0/16), leave other settings default, and create.
+
+2. Create Subnets:
+   - Go to Subnets > Create subnet.
+   - Select your VPC, add a public subnet (e.g., 10.0.1.0/24) and a private subnet (e.g., 10.0.2.0/24).
+
+3. Set Up Internet Gateway:
+   - Go to Internet Gateways > Create internet gateway.
+   - Attach it to your VPC.
+   - Go to Route Tables, select the public subnet's route table, and add a route: Destination 0.0.0.0/0, Target: your Internet Gateway.
+
+4. Create a Security Group:
+   - Go to Security Groups > Create security group.
+   - Attach to your VPC, allow inbound rules for HTTP (port 80) and SSH (port 22) from your IP.
+
+5. Create a Network ACL:
+   - Go to Network ACLs > Create network ACL.
+   - Associate with your VPC and public subnet.
+   - Add inbound/outbound rules to allow HTTP (80), SSH (22), and ephemeral ports (1024-65535).
+
+6. Launch an EC2 Instance:
+   - Go to EC2 > Instances > Launch instance.
+   - Choose Amazon Linux 2 AMI, t2.micro, select your public subnet, and assign the security group.
+   - Add a key pair for SSH access.
+   - Launch the instance.
+
+7. Deploy a Simple Web App:
+   - SSH into your instance: ssh -i <your-key.pem> ec2-user@<public-ip>
+   - Install a web server (e.g., sudo yum install -y httpd; sudo systemctl start httpd).
+   - Create a simple index.html in /var/www/html.
+   - Visit your EC2 public IP in a browser to see your web page.
+
+8. Clean up resources when done to avoid charges. 
