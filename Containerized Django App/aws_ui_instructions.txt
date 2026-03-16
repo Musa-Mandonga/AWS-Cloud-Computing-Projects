@@ -1,0 +1,35 @@
+Project 7: Containerize Django App and Deploy with ECR/ECS - AWS Management Console & CLI Instructions
+
+1. Create a Simple Django App:
+   - Install Python 3 and pip.
+   - Run: python3 -m venv venv && source venv/bin/activate
+   - Run: pip install django
+   - Run: django-admin startproject mysite
+   - Edit mysite/settings.py: set ALLOWED_HOSTS = ['*']
+
+2. Write a Dockerfile in the project root:
+   - See provided Dockerfile example.
+
+3. Build and Test Locally:
+   - docker build -t mydjangoapp .
+   - docker run -p 8000:8000 mydjangoapp
+   - Visit http://localhost:8000 to verify.
+
+4. Create an ECR Repository:
+   - Go to ECR > Repositories > Create repository.
+   - Name it (e.g., mydjangoapp).
+
+5. Push Image to ECR:
+   - Authenticate: `aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com`
+   - Tag: `docker tag mydjangoapp:latest <account-id>.dkr.ecr.<region>.amazonaws.com/mydjangoapp:latest`
+   - Push: `docker push <account-id>.dkr.ecr.<region>.amazonaws.com/mydjangoapp:latest`
+
+6. Deploy to ECS (Fargate):
+   - Go to ECS > Clusters > Create Cluster > Networking only (Fargate).
+   - Create a Task Definition: Launch type Fargate, add container using your ECR image URI, set port 8000.
+   - Create a Service: Use your cluster and task definition, set desired count, and create.
+   - (Optional) Set up a security group to allow inbound traffic on port 8000 or 80.
+
+7. Access your Django app using the public IP of the ECS service's load balancer or task.
+
+8. Clean up resources when done to avoid charges. 
