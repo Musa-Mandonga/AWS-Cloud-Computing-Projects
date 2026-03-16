@@ -1,0 +1,63 @@
+# How to Deploy this CloudFormation Template
+#
+# Option 1: AWS Management Console
+# 1. Go to CloudFormation > Create stack > With new resources (standard).
+# 2. Upload this file and follow the prompts.
+#
+# Option 2: AWS CLI
+# 1. aws cloudformation create-stack --stack-name alb-logs-athena --template-body file://project9_alb_logs_athena.yaml
+# 2. aws cloudformation describe-stacks --stack-name alb-logs-athena
+#
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Creates an S3 bucket for ALB logs, a Glue database, and an Athena workgroup for querying logs.
+
+Resources:
+  ALBLogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'alb-logs-${AWS::AccountId}-${AWS::Region}'
+      VersioningConfiguration:
+        Status: Enabled
+
+  ALBLogsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ALBLogsBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: s3:PutObject
+            Resource: !Sub '${ALBLogsBucket.Arn}/AWSLogs/${AWS::AccountId}/*'
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: 'bucket-owner-full-control'
+
+  ALBLogsGlueDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: alb_logs_db
+
+  AthenaWorkGroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: alb-logs-wg
+      State: ENABLED
+      WorkGroupConfiguration:
+        ResultConfiguration:
+          OutputLocation: !Sub 's3://${ALBLogsBucket}/athena-results/'
+
+Outputs:
+  ALBLogsBucketName:
+    Description: S3 bucket for ALB logs
+    Value: !Ref ALBLogsBucket
+  GlueDatabaseName:
+    Description: Glue database for ALB logs
+    Value: !Ref ALBLogsGlueDatabase
+  AthenaWorkGroupName:
+    Description: Athena workgroup for querying logs
+    Value: !Ref AthenaWorkGroup 
