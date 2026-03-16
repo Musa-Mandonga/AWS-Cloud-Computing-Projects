@@ -1,0 +1,97 @@
+# How to Deploy this CloudFormation Template
+#
+# Option 1: AWS Management Console
+# 1. Go to CloudFormation > Create stack > With new resources (standard).
+# 2. Upload this file and follow the prompts.
+#
+# Option 2: AWS CLI
+# 1. aws cloudformation create-stack --stack-name rds-demo-stack --template-body file://project5_db_connect_write_read.yaml --parameters ParameterKey=DBUsername,ParameterValue=admin ParameterKey=DBPassword,ParameterValue=yourpassword ParameterKey=KeyName,ParameterValue=your-keypair
+# 2. aws cloudformation describe-stacks --stack-name rds-demo-stack
+#
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Creates a MySQL RDS instance and a security group for EC2 access.
+
+Parameters:
+  DBUsername:
+    Type: String
+    Description: The database admin account username
+    MinLength: 1
+    MaxLength: 16
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+
+  DBPassword:
+    Type: String
+    Description: The database admin account password
+    NoEcho: true
+    MinLength: 8
+    MaxLength: 41
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+
+Resources:
+  MyDBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable MySQL access from anywhere (for demo; restrict in production)
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+
+  MyDBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: mydbinstance
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      Engine: mysql
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      VPCSecurityGroups:
+        - !GetAtt MyDBSecurityGroup.GroupId
+      PubliclyAccessible: true
+      BackupRetentionPeriod: 0
+      MultiAZ: false
+      StorageType: gp2
+      DBName: sampledb
+
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref MyDBSecurityGroup
+      ImageId: ami-0c02fb55956c7d316 # Amazon Linux 2 in us-east-1; update for your region if needed
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          yum install -y mysql
+          echo '[client]' > /home/ec2-user/.my.cnf
+          echo 'user=${DBUsername}' >> /home/ec2-user/.my.cnf
+          echo 'password=${DBPassword}' >> /home/ec2-user/.my.cnf
+          echo 'host=${MyDBInstance.Endpoint.Address}' >> /home/ec2-user/.my.cnf
+          echo 'database=sampledb' >> /home/ec2-user/.my.cnf
+          chown ec2-user:ec2-user /home/ec2-user/.my.cnf
+          chmod 600 /home/ec2-user/.my.cnf
+          # Create a test table and insert data
+          mysql --connect-timeout=60 -e "CREATE TABLE IF NOT EXISTS test (id INT PRIMARY KEY AUTO_INCREMENT, message VARCHAR(100));"
+          mysql --connect-timeout=60 -e "INSERT INTO test (message) VALUES ('Hello from CloudFormation!');"
+          # Retrieve data
+          mysql --connect-timeout=60 -e "SELECT * FROM test;" > /home/ec2-user/query_result.txt
+
+Outputs:
+  RDSInstanceEndpoint:
+    Description: The endpoint address of the RDS instance
+    Value: !GetAtt MyDBInstance.Endpoint.Address
+  EC2PublicIP:
+    Description: Public IP of the EC2 instance
+    Value: !GetAtt MyEC2Instance.PublicIp 
