@@ -1,0 +1,31 @@
+Project 9: Analyze ALB Logs in S3 Using Athena - AWS Management Console Instructions
+
+1. Enable ALB Access Logging:
+   - Go to EC2 > Load Balancers > Select your ALB.
+   - In the Description tab, click Edit attributes.
+   - Enable Access logs, specify an S3 bucket (create one if needed), and save.
+
+2. Generate Traffic and Wait for Logs:
+   - Access your ALB's DNS name from a browser or with curl to generate log entries.
+   - Wait a few minutes for logs to appear in your S3 bucket.
+
+3. Create a Glue Crawler:
+   - Go to AWS Glue > Crawlers > Add crawler.
+   - Set the S3 bucket path to your ALB logs.
+   - Choose or create an IAM role for Glue.
+   - Set the crawler to create a new database (e.g., alb_logs_db).
+   - Run the crawler to create a table.
+
+4. Query Logs with Athena:
+   - Go to Athena > Query editor.
+   - Set the query result location to an S3 bucket.
+   - In the database (e.g., alb_logs_db), find your new table.
+   - Use the provided sample query to analyze the logs.
+
+5. Sample Athena Query:
+   SELECT elb_name, request_ip, request_verb, request_url, response_code, user_agent
+   FROM alb_logs_table
+   WHERE response_code = '404'
+   LIMIT 10;
+
+6. Clean up resources when done to avoid charges. 
