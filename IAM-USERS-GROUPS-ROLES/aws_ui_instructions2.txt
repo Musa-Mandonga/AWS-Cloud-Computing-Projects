@@ -1,0 +1,21 @@
+Project 2: Set Up IAM User, Group, Policy, and Role - AWS Management Console Instructions
+
+1. Sign in to the AWS Management Console and go to the IAM service.
+2. In the left menu, click "User groups" and then "Create group."
+   - Enter a group name (e.g., BasicViewGroup).
+   - Attach the "ReadOnlyAccess" policy or create a custom policy for basic read-only permissions.
+   - Click "Create group."
+3. In the left menu, click "Users" and then "Add users."
+   - Enter a user name (e.g., BasicUser).
+   - Select "Provide user access to the AWS Management Console" and/or "Programmatic access" as needed.
+   - Click "Next."
+   - Add the user to the group you created.
+   - Click "Next" and then "Create user."
+4. In the left menu, click "Roles" and then "Create role."
+   - Select "AWS service" and choose "EC2" as the use case.
+   - Click "Next."
+   - Attach the "ReadOnlyAccess" policy or a custom policy.
+   - Name the role (e.g., ExampleRole) and create it.
+5. Review the users, groups, and roles you created in the IAM dashboard.
+
+Note: This project introduces AWS security best practices and the principle of least privilege. 
