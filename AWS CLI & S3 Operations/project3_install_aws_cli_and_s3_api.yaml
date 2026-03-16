@@ -1,0 +1,29 @@
+# How to Deploy this CloudFormation Template
+#
+# Option 1: AWS Management Console
+# 1. Sign in to the AWS Console and go to CloudFormation.
+# 2. Click 'Create stack' > 'With new resources (standard)'.
+# 3. Upload this YAML file and follow the prompts. Enter a globally unique bucket name when prompted.
+#
+# Option 2: AWS CLI
+# 1. Open your terminal and navigate to the folder containing this file.
+# 2. Run:
+#    aws cloudformation create-stack --stack-name s3-bucket-stack --template-body file://project3_install_aws_cli_and_s3_api.yaml --parameters ParameterKey=BucketName,ParameterValue=your-unique-bucket-name
+# 3. To check status:
+#    aws cloudformation describe-stacks --stack-name s3-bucket-stack
+#
+AWSTemplateFormatVersion: '2010-09-09'  # Specifies the version of the CloudFormation template format
+Description: >
+  Creates an S3 bucket for CLI/API interaction. (Bucket name must be globally unique.)
+
+Parameters:
+  BucketName:
+    Type: String  # The type of parameter (string)
+    Description: Enter a globally unique S3 bucket name  # Prompt shown in the console
+
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket  # Defines an S3 Bucket resource
+    Properties:
+      BucketName: !Ref BucketName  # Sets the bucket name from the parameter
+# Comments: This template creates an S3 bucket. Use the AWS CLI to interact with it after deployment. 
