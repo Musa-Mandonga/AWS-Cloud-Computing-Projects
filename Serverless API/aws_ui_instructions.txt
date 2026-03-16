@@ -1,0 +1,24 @@
+Project 8: Lambda Function and API Gateway - AWS Management Console Instructions
+
+1. Create a Lambda Function:
+   - Go to Lambda > Create function.
+   - Choose Author from scratch, name it (e.g., HelloWorldFunction), select Python 3.x runtime.
+   - In the code editor, paste the provided hello world code.
+   - Click Deploy.
+
+2. Test the Lambda Function:
+   - Click Test, create a new test event (use default settings), and run it.
+   - Confirm you get a JSON hello world response.
+
+3. Create an API Gateway:
+   - Go to API Gateway > Create API > REST API (Build).
+   - Name your API (e.g., HelloWorldAPI).
+   - Create a new resource (e.g., /hello).
+   - Add a GET method, choose Lambda Function integration, and select your Lambda.
+   - Deploy the API to a new stage (e.g., prod).
+
+4. Test the API Endpoint:
+   - Copy the Invoke URL from the stage dashboard.
+   - Visit the URL in your browser or run: curl https://<api-id>.execute-api.<region>.amazonaws.com/prod/hello
+
+5. Clean up resources when done to avoid charges. 
