@@ -1,0 +1,98 @@
+# How to Deploy this CloudFormation Template
+#
+# Option 1: AWS Management Console
+# 1. Go to CloudFormation > Create stack > With new resources (standard).
+# 2. Upload this file and follow the prompts.
+#
+# Option 2: AWS CLI
+# 1. aws cloudformation create-stack --stack-name lambda-apigateway-demo --template-body file://project8_lambda_apigateway.yaml --capabilities CAPABILITY_NAMED_IAM
+# 2. aws cloudformation describe-stacks --stack-name lambda-apigateway-demo
+#
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Creates a simple Lambda function and exposes it via API Gateway.
+
+Resources:
+  HelloWorldLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecution
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+
+  HelloWorldLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: hello_world_lambda.lambda_handler
+      Role: !GetAtt HelloWorldLambdaRole.Arn
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+              return {
+                  'statusCode': 200,
+                  'headers': {'Content-Type': 'application/json'},
+                  'body': '{"message": "Hello, world! This is a Lambda function exposed via API Gateway."}'
+              }
+      Runtime: python3.11
+      Timeout: 10
+
+  ApiGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: HelloWorldAPI
+
+  ApiGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: hello
+
+  ApiGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !Ref ApiGatewayResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          - { LambdaArn: !GetAtt HelloWorldLambda.Arn }
+
+  LambdaApiGatewayInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HelloWorldLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/GET/hello
+
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: ApiGatewayMethod
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      StageName: prod
+
+Outputs:
+  ApiInvokeUrl:
+    Description: Invoke URL for the API Gateway endpoint
+    Value: !Sub 'https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/hello' 
