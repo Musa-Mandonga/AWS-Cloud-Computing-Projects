@@ -1,0 +1,31 @@
+Project 6: Public Hosted Zone, S3 Static Website, and CloudFront - AWS Management Console Instructions
+
+1. Create a Public Hosted Zone:
+   - Go to Route 53 > Hosted zones > Create hosted zone.
+   - Enter your domain name (e.g., example.com), select Public hosted zone, and create.
+   - Note the name servers (NS records) and update your domain registrar to use these AWS name servers.
+
+2. Set Up a Static Website in S3:
+   - Go to S3 > Create bucket.
+   - Name the bucket exactly as your domain (e.g., example.com), choose a region, and create.
+   - Click the bucket > Properties > Static website hosting > Enable.
+   - Set index document (e.g., index.html) and (optionally) error document.
+   - Upload your website files (index.html, etc.) to the bucket.
+
+3. Make the Bucket Public:
+   - Go to Permissions > Bucket policy.
+   - Add a policy to allow public read (see CloudFormation for example).
+
+4. Create a CloudFront Distribution:
+   - Go to CloudFront > Create distribution.
+   - Set the origin domain to your S3 website endpoint (not the bucket ARN).
+   - Set Viewer protocol policy to Redirect HTTP to HTTPS.
+   - (Optional) Add your domain as an Alternate Domain Name (CNAME) and set up SSL.
+   - Create the distribution and note the CloudFront domain name.
+
+5. Update DNS Records:
+   - In Route 53, add an A or CNAME record for your domain pointing to the CloudFront distribution domain name.
+
+6. Test your website by visiting your domain in a browser.
+
+7. Clean up resources when done to avoid charges. 
